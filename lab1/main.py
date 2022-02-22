@@ -15,9 +15,9 @@ touch = TouchSensor(Port.S2)
 while(not Button.CENTER in ev3.buttons.pressed()):
     wait(100)
 
-DISTANCE = 2455.525
-left_motor.run_target(500, DISTANCE, wait=False)
-right_motor.run_target(500, DISTANCE, wait=False)
+DISTANCE = 2557
+left_motor.run_target(350, DISTANCE, wait=False)
+right_motor.run_target(350, DISTANCE, wait=True)
 
 ev3.speaker.beep(1000, 500)
 
@@ -26,10 +26,10 @@ ev3.speaker.beep(1000, 500)
 while(not Button.CENTER in ev3.buttons.pressed()):
     wait(100)
 
-left_motor.run(250)
-right_motor.run(250)
+left_motor.run(150)
+right_motor.run(150)
 
-while(ultrasonic.distance() > 525):
+while(ultrasonic.distance() > 537.5):
     wait(100)
 
 left_motor.hold()
@@ -51,7 +51,7 @@ while(not touch.pressed()):
 left_motor.run(-200)
 right_motor.run(-200)
 
-while(ultrasonic.distance() < 525):
+while(ultrasonic.distance() < 517.5):
     wait(100)
 
 left_motor.hold()
