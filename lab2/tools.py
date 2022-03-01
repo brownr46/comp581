@@ -1,4 +1,6 @@
-from pybricks.tools import wait
+#!/usr/bin/env pybricks-micropython
+
+# from pybricks.tools import wait
 
 def turn_angle(left, right, gyro, angle, speed=50):
     initial = gyro.angle()
@@ -6,7 +8,7 @@ def turn_angle(left, right, gyro, angle, speed=50):
     left.run(speed if angle > 0 else -speed)
     right.run(-speed if angle > 0 else speed)
 
-    while (abs(inital + angle - gyro.angle()) > 2):
+    while (abs(initial + angle - gyro.angle()) > 2):
         wait(100)
 
     left.hold()
