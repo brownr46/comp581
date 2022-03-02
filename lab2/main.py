@@ -53,40 +53,31 @@ turn_angle(left_motor, right_motor, gyro, 90)
 # PART 2
 SET_POINT = ultrasonic.distance()
 TARGET = 4270
+SPEED = 150
 
 avg = 0
 
 left_motor.reset_angle(0)
 right_motor.reset_angle(0)
 
-left_motor.run(200)
-right_motor.run(200)
+left_motor.run(SPEED)
+right_motor.run(SPEED)
 
 while (avg < TARGET):
-    wait(50)
     distance = ultrasonic.distance()
+    delta = distance - SET_POINT
+    ev3.screen.clear()
+    ev3.screen.draw_text(0,0, str(distance))
 
-    if abs(distance - SET_POINT) > 5:
-        if distance < SET_POINT:
-            left_motor.run(300)
-            right_motor.run(100)
-        else:
-            left_motor.run(100)
-            right_motor.run(300)
-    else:
-        left_motor.run(200)
-        right_motor.run(200)
-
-    # left_motor.run_angle(300, 180, wait=False)
-    # right_motor.run_angle(300, 180, wait=True)
-
-    # if (abs(distance - SET_POINT) > 3):
-    #     if distance < SET_POINT:
-    #         turn_angle(left_motor, right_motor, gyro, 7.5)
-    #     else:
-    #         turn_angle(left_motor, right_motor, gyro, -7.5)
+    left_factor = max(0, min(1 - ((delta / SET_POINT) * 2) , 3)) 
+    right_factor = max(0, min(1 + ((delta / SET_POINT) * 2), 3))
+    
+    left_motor.run(SPEED * left_factor)
+    right_motor.run(SPEED * right_factor)
 
     avg = (left_motor.angle() + right_motor.angle()) / 2
+    wait(25)
+
 
 left_motor.hold()
 right_motor.hold()
