@@ -44,16 +44,16 @@ while(not Button.CENTER in ev3.buttons.pressed()):
 
 drive_until_touch(left_motor, right_motor, touch, speed=250)
 
-left_motor.run_angle(200, -450, wait=False)
-right_motor.run_angle(200, -450, wait=True)
+left_motor.run_angle(200, -400, wait=False)
+right_motor.run_angle(200, -400, wait=True)
 
 turn_angle(left_motor, right_motor, gyro, 90)
 
 
 # PART 2
 SET_POINT = ultrasonic.distance()
-TARGET = 4270
-SPEED = 150
+TARGET = 4000
+SPEED = 175
 
 avg = 0
 
@@ -68,17 +68,20 @@ while (avg < TARGET):
     delta = distance - SET_POINT
     ev3.screen.clear()
     ev3.screen.draw_text(0,0, str(distance))
+    if abs(delta) > 15:
+        scale = 0.005 if delta > 0 else 0.05
 
-    scale = 0.02 if delta > 0 else 0.035
+        left_factor = max(0, min(1 - (delta * scale), 1.75)) 
+        right_factor = max(0, min(1 + (delta * scale), 1.75))
+        
+        left_motor.run(SPEED * left_factor)
+        right_motor.run(SPEED * right_factor)
+    else:
+        left_motor.run(SPEED)
+        right_motor.run(SPEED)
 
-    left_factor = max(0, min(1 - (delta * scale), 1.5)) 
-    right_factor = max(0, min(1 + (delta * scale), 1.5))
-    
-    left_motor.run(SPEED * left_factor)
-    right_motor.run(SPEED * right_factor)
-
-    # avg = (left_motor.angle() + right_motor.angle()) / 2
-    # wait(100)
+    avg = (left_motor.angle() + right_motor.angle()) / 2
+    wait(100)
 
 left_motor.hold()
 right_motor.hold()
