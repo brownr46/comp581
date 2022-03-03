@@ -44,8 +44,8 @@ while(not Button.CENTER in ev3.buttons.pressed()):
 
 drive_until_touch(left_motor, right_motor, touch, speed=250)
 
-left_motor.run_angle(200, -360, wait=False)
-right_motor.run_angle(200, -360, wait=True)
+left_motor.run_angle(200, -450, wait=False)
+right_motor.run_angle(200, -450, wait=True)
 
 turn_angle(left_motor, right_motor, gyro, 90)
 
@@ -69,15 +69,16 @@ while (avg < TARGET):
     ev3.screen.clear()
     ev3.screen.draw_text(0,0, str(distance))
 
-    left_factor = max(0, min(1 - ((delta / SET_POINT) * 2) , 3)) 
-    right_factor = max(0, min(1 + ((delta / SET_POINT) * 2), 3))
+    scale = 0.02 if delta > 0 else 0.035
+
+    left_factor = max(0, min(1 - (delta * scale), 1.5)) 
+    right_factor = max(0, min(1 + (delta * scale), 1.5))
     
     left_motor.run(SPEED * left_factor)
     right_motor.run(SPEED * right_factor)
 
-    avg = (left_motor.angle() + right_motor.angle()) / 2
-    wait(25)
-
+    # avg = (left_motor.angle() + right_motor.angle()) / 2
+    # wait(100)
 
 left_motor.hold()
 right_motor.hold()
