@@ -52,7 +52,7 @@ turn_angle(left_motor, right_motor, gyro, 90)
 
 # PART 2
 SET_POINT = ultrasonic.distance()
-TARGET = 3850
+TARGET = 4000
 SPEED = 125
 
 avg = 0
