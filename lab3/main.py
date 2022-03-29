@@ -59,11 +59,7 @@ SPEED = 125
 L = 12
 RADIUS = 2.8
 
-x = 0
-y = 0
-theta = 0
-distance = 0
-index = 0
+x = y = theta = distance = index = 0
 
 left_motor.reset_angle(0)
 right_motor.reset_angle(0)
