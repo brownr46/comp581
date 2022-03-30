@@ -31,6 +31,7 @@ def drive_until_touch(left, right, touch, speed=200):
     left.hold()
     right.hold()
 
+
 ev3 = EV3Brick()
 left_motor = Motor(Port.A)
 right_motor = Motor(Port.B)
@@ -43,23 +44,28 @@ gyro = GyroSensor(Port.S3)
 while(not Button.CENTER in ev3.buttons.pressed()):
     wait(100)
 
+left_motor.reset_angle(0)
+right_motor.reset_angle(0)
+
 drive_until_touch(left_motor, right_motor, touch, speed=250)
+
+INITIAL_DISTANCE = left_motor.angle()
 
 ev3.speaker.beep(1000, 500)
 
-left_motor.run_angle(200, -250, wait=False)
-right_motor.run_angle(200, -250, wait=True)
+left_motor.run_angle(200, -275, wait=False)
+right_motor.run_angle(200, -275, wait=True)
 
 turn_angle(left_motor, right_motor, gyro, 90)
 
 
 # PART 2
 SET_POINT = ultrasonic.distance()
-SPEED = 125
+SPEED = 150
 L = 12
 RADIUS = 2.8
 
-x = y = theta = distance = index = 0
+x = y = theta = distance = cycle = 0
 
 left_motor.reset_angle(0)
 right_motor.reset_angle(0)
@@ -68,7 +74,18 @@ gyro.reset_angle(0)
 left_motor.run(SPEED)
 right_motor.run(SPEED)
 
-while (distance > 3 or index < 100):
+while (distance > 13 or cycle < 100):
+    if touch.pressed():
+        left_motor.run_angle(200, -250, wait=False)
+        right_motor.run_angle(200, -250, wait=True)
+
+        ev3.speaker.say('Oh no I have hit a wall')
+
+        x = x - 12.2 * math.cos(theta)
+        y = y - 12.2 * math.sin(theta)
+
+        turn_angle(left_motor, right_motor, gyro, 75)
+
     distance = ultrasonic.distance()
     delta = distance - SET_POINT
     ev3.screen.clear()
@@ -77,7 +94,7 @@ while (distance > 3 or index < 100):
     ev3.screen.draw_text(0,80, str(round(y)))
     ev3.screen.draw_text(0,100, str(round(theta * 180 / math.pi)))
 
-    scale = 0.0034 if delta > 0 else 0.01
+    scale = 0.0034 if delta > 0 else 0.02
 
     left_factor = max(.7, min(1 - (delta * scale), 1.15)) 
     right_factor = max(.7, min(1 + (delta * scale), 1.15))
@@ -91,7 +108,7 @@ while (distance > 3 or index < 100):
     vl = (left_motor.speed() * math.pi / 180) * RADIUS
     vr = (right_motor.speed() * math.pi / 180) * RADIUS
 
-    if not vr == vl:
+    if not vl == vr:
         omega = (vr - vl) / L
         R = L / 2 * (vl + vr) / (vr - vl) 
 
@@ -100,7 +117,6 @@ while (distance > 3 or index < 100):
 
         x = (math.cos(omega * .1) * (x - ICCx)) + (-math.sin(omega * .1) * (y - ICCy)) + ICCx
         y = (math.sin(omega * .1) * (x - ICCx)) + (math.cos(omega * .1) * (y - ICCy)) + ICCy
-        # theta = theta + omega * .1
         theta = -gyro.angle() * math.pi / 180
 
     else:
@@ -108,8 +124,18 @@ while (distance > 3 or index < 100):
         y = y + vl * math.sin(theta) * .1
 
     distance = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-    index += 1
+    cycle += 1
     wait(100)
+
+ev3.speaker.beep(1000, 500)
+
+left_motor.run_angle(SPEED, 150, wait=False)
+right_motor.run_angle(SPEED, 150, wait=True)
+
+turn_angle(left_motor, right_motor, gyro, -90)
+
+left_motor.run_angle(300, -INITIAL_DISTANCE + 275, wait=False)
+right_motor.run_angle(300, -INITIAL_DISTANCE + 275, wait=True)
 
 left_motor.hold()
 right_motor.hold()
