@@ -31,6 +31,10 @@ def drive_until_touch(left, right, touch, speed=200):
     left.hold()
     right.hold()
 
+def run_angle(left, right, speed, angle):
+    left.run_angle(speed, angle, wait=False)
+    right.run_angle(speed, angle, wait=True)
+
 
 ev3 = EV3Brick()
 left_motor = Motor(Port.A)
@@ -53,8 +57,7 @@ INITIAL_DISTANCE = left_motor.angle()
 
 ev3.speaker.beep(1000, 500)
 
-left_motor.run_angle(200, -275, wait=False)
-right_motor.run_angle(200, -275, wait=True)
+run_angle(left_motor, right_motor, 200, -275)
 
 turn_angle(left_motor, right_motor, gyro, 90)
 
@@ -76,8 +79,7 @@ right_motor.run(SPEED)
 
 while (distance > 13 or cycle < 100):
     if touch.pressed():
-        left_motor.run_angle(200, -250, wait=False)
-        right_motor.run_angle(200, -250, wait=True)
+        run_angle(left_motor, right_motor, 200, -250)
 
         ev3.speaker.say('Oh no I have hit a wall')
 
@@ -129,13 +131,11 @@ while (distance > 13 or cycle < 100):
 
 ev3.speaker.beep(1000, 500)
 
-left_motor.run_angle(SPEED, 150, wait=False)
-right_motor.run_angle(SPEED, 150, wait=True)
+run_angle(left_motor, right_motor, SPEED, 150)
 
 turn_angle(left_motor, right_motor, gyro, -90)
 
-left_motor.run_angle(300, -INITIAL_DISTANCE + 275, wait=False)
-right_motor.run_angle(300, -INITIAL_DISTANCE + 275, wait=True)
+run_angle(left_motor, right_motor, 400, -INITIAL_DISTANCE + 275)
 
 left_motor.hold()
 right_motor.hold()
