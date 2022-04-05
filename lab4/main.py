@@ -21,16 +21,6 @@ def turn_angle(left, right, gyro, angle, speed=50):
     left.hold()
     right.hold()
 
-def drive_until_touch(left, right, touch, speed=200):
-    left.run(speed)
-    right.run(speed)
-
-    while (not touch.pressed()):
-        wait(100)
-
-    left.hold()
-    right.hold()
-
 def run_angle(left, right, speed, angle):
     left.run_angle(speed, angle, wait=False)
     right.run_angle(speed, angle, wait=True)
@@ -38,14 +28,11 @@ def run_angle(left, right, speed, angle):
 def distance_to_line(x, y, a=-2.25, b=1, c=0):
     return abs(a*x + b*y + c) / math.sqrt(math.pow(a, 2) + math.pow(b, 2))
 
-def can_turn_to_goal(x, y, theta):
-    return theta > 1.15272351794
-
 def distance_to_goal(x, y):
     return math.sqrt(math.pow((80 - x), 2) + math.pow(180 - y, 2))
 
-def closer_to_goal(hit_point, distance_from_goal):
-    return distance_to_goal(hit_point[0], hit_point[1]) - distance_from_goal > 10
+def can_turn_to_goal(x, y, theta): # TODO: FIX
+    return theta > 1.15272351794
 
 
 ev3 = EV3Brick()
@@ -62,12 +49,11 @@ while(not Button.CENTER in ev3.buttons.pressed()):
 SET_POINT = 220
 SPEED = 150
 L = 12
-RADIUS = 3.25
+RADIUS = 33.26
 
 x = y = 0
-hit_point = 0,0
 theta = math.pi / 2
-distance_from_goal = 100000
+hit_point_distance = distance_from_goal = float('inf')
 on_line = True
 
 left_motor.reset_angle(0)
@@ -82,41 +68,38 @@ right_motor.run(SPEED)
 while (distance_from_goal > 3):
     if Button.CENTER in ev3.buttons.pressed():
         break
-    distance = ultrasonic.distance()
-    if distance_to_line(x, y) < 2 and can_turn_to_goal(x, y, theta) and not on_line and closer_to_goal(hit_point, distance_from_goal):
-        on_line = True
 
+    distance = ultrasonic.distance()
+
+    if not on_line and distance_to_line(x, y) < 2 and can_turn_to_goal(x, y, theta) and hit_point_distance - distance_from_goal > 5:
         turn_angle(left_motor, right_motor, gyro, theta * 180 / math.pi - 66)
-        
+
         left_motor.run(SPEED)
         right_motor.run(SPEED)
 
-    if touch.pressed():
-        hit_point = x,y
-        run_angle(left_motor, right_motor, 200, -250)
+        on_line = True        
 
-        x = x - 12.2 * math.cos(theta)
-        y = y - 12.2 * math.sin(theta)
+    if touch.pressed() or (distance < SET_POINT and on_line):
+        if touch.pressed():
+            run_angle(left_motor, right_motor, 200, -250)
 
-        turn_angle(left_motor, right_motor, gyro, 75)
+            x = x - 12.2 * math.cos(theta)
+            y = y - 12.2 * math.sin(theta)
 
+            turn_angle(left_motor, right_motor, gyro, 75)
+            theta = -gyro.angle() * math.pi / 180
+
+        hit_point_distance = distance_to_goal(x, y)
         on_line = False
-
-    elif distance < SET_POINT and on_line:
-        on_line = False
-        hit_point = x,y
-    
 
     ev3.screen.clear()
     ev3.screen.draw_text(0,0, str(distance))
     ev3.screen.draw_text(0,60, str(round(x)))
     ev3.screen.draw_text(0,80, str(round(y)))
     ev3.screen.draw_text(0,100, str(round(theta * 180 / math.pi)))
-    ev3.screen.draw_text(50, 40, str(round(-gyro.angle())))
     ev3.screen.draw_text(50, 60, str(round(distance_to_line(x,y))))
-    ev3.screen.draw_text(50, 80, str(on_line))
-    ev3.screen.draw_text(50, 100, str(round(distance_from_goal)))
-
+    ev3.screen.draw_text(50, 80, str(round(distance_from_goal)))
+    ev3.screen.draw_text(50, 100, str(on_line))
 
     if not on_line:
         delta = distance - SET_POINT
@@ -157,16 +140,3 @@ left_motor.hold()
 right_motor.hold()
 
 ev3.speaker.beep(1000, 500)
-
-while(True):
-    ev3.screen.clear()
-    # ev3.screen.draw_text(0,0, str(distance))
-    ev3.screen.draw_text(0,60, str(round(x)))
-    ev3.screen.draw_text(0,80, str(round(y)))
-    ev3.screen.draw_text(0,100, str(round(theta * 180 / math.pi)))
-    ev3.screen.draw_text(50, 40, str(round(-gyro.angle())))
-    ev3.screen.draw_text(50, 60, str(round(distance_to_line(x,y))))
-    ev3.screen.draw_text(50, 80, str(on_line))
-    ev3.screen.draw_text(50, 100, str(round(distance_from_goal)))
-
-    wait(100)
