@@ -41,6 +41,7 @@ left_motor = Motor(Port.A)
 right_motor = Motor(Port.B)
 ultrasonic = UltrasonicSensor(Port.S1)
 touch = TouchSensor(Port.S2)
+touch_l = TouchSensor(Port.S4)
 gyro = GyroSensor(Port.S3)
 
 
@@ -59,10 +60,9 @@ on_line = flag = True
 
 left_motor.reset_angle(0)
 right_motor.reset_angle(0)
-gyro.reset_angle(-90)
+gyro.reset_angle(0)
 
 turn_angle(left_motor, right_motor, gyro, 24)
-theta = -gyro.angle() * math.pi / 180
 
 left_motor.run(SPEED)
 right_motor.run(SPEED)
@@ -72,24 +72,26 @@ while (distance_from_goal > 3 and flag):
     if Button.CENTER in ev3.buttons.pressed():
         break
 
-    if not on_line and distance_to_line(x, y) < 2 and can_turn_to_goal(x, y, theta) and hit_point_distance - distance_from_goal > 15:
-        turn_angle(left_motor, right_motor, gyro, theta * 180 / math.pi - 66)
-        theta = -gyro.angle() * math.pi / 180
+    if not on_line and distance_to_line(x, y) < 2 and can_turn_to_goal(x, y, theta) and hit_point_distance - distance_from_goal > 5:
+        turn_angle(left_motor, right_motor, gyro, (theta - 1.15191730632 if y < -1/2.25 * x + 1940/9 else theta - 4.29350995991) * 180 / math.pi)
+        theta -= gyro.angle() * math.pi / 180
+        gyro.reset_angle(0)
 
         left_motor.run(SPEED)
         right_motor.run(SPEED)
 
         on_line = True        
 
-    if touch.pressed() or (distance < SET_POINT and on_line):
-        if touch.pressed():
+    if touch.pressed() or touch_l.pressed() or (distance < SET_POINT and on_line):
+        if touch.pressed() or touch_l.pressed():
             run_angle(left_motor, right_motor, 200, -250)
 
             x = x - 13.9 * math.cos(theta)
             y = y - 13.9 * math.sin(theta)
 
-            turn_angle(left_motor, right_motor, gyro, 75)
-            theta = -gyro.angle() * math.pi / 180
+            turn_angle(left_motor, right_motor, gyro, 80)
+            theta -= gyro.angle() * math.pi / 180
+            gyro.reset_angle(0)
 
         hit_point_distance = distance_to_goal(x, y)
         on_line = False
@@ -130,7 +132,8 @@ while (distance_from_goal > 3 and flag):
 
         x = (math.cos(omega * .1) * (x - ICCx)) + (-math.sin(omega * .1) * (y - ICCy)) + ICCx
         y = (math.sin(omega * .1) * (x - ICCx)) + (math.cos(omega * .1) * (y - ICCy)) + ICCy
-        theta = -gyro.angle() * math.pi / 180
+        theta -= gyro.angle() * math.pi / 180
+        gyro.reset_angle(0)
 
     else:
         x = x + vl * math.cos(theta) * .1
